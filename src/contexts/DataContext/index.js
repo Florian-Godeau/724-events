@@ -19,9 +19,21 @@ export const api = {
 export const DataProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+  const [last, setLast] = useState(null); // Déclaration de l'état de last
   const getData = useCallback(async () => {
     try {
-      setData(await api.loadData());
+      const fetchedData = await api.loadData(); // Appel correct de la fonction asynchrone
+      setData(fetchedData); // MAJ des données une fois qu'elles sont disponibles
+      // Recherche le dernier événement
+      if (fetchedData && fetchedData.events) {
+        setLast(
+          fetchedData.events.reduce((currentEvent, latestEvent) =>
+            new Date(currentEvent.date) > new Date(latestEvent.date)
+              ? currentEvent
+              : latestEvent
+          )
+        );
+      }
     } catch (err) {
       setError(err);
     }
@@ -37,6 +49,7 @@ export const DataProvider = ({ children }) => {
       value={{
         data,
         error,
+        last, // Ajout de last
       }}
     >
       {children}
